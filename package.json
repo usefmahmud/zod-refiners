@@ -22,14 +22,7 @@
     "test:watch": "vitest",
     "typecheck:tests": "tsc -p tsconfig.test.json"
   },
-  "author": "",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.20.0",
-      "onFail": "download"
-    }
-  },
+  "author": "Yousef M. Abdulaziz <usefmahmud@duck.com>",
   "type": "commonjs",
   "peerDependencies": {
     "zod": ">=3.22.0"

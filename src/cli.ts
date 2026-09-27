@@ -3,6 +3,7 @@ import { Command } from "commander";
 import pc from "picocolors";
 import { ensureConfig, readConfig } from "./config";
 import { loadManifest, resolveClosureOrReport, copyEntry } from "./registry";
+import { CLI_VERSION } from "./version";
 
 const program = new Command();
 
@@ -11,7 +12,7 @@ program
   .description(
     "Copy isolated, composable Zod refiner functions into your project.",
   )
-  .version("0.1.0");
+  .version(CLI_VERSION);
 
 program
   .command("init")
