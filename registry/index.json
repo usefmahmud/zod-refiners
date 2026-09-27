@@ -10,5 +10,11 @@
     "description": "Intended for confirmation fields such as `confirmPassword`. When the values differ, the validation error is assigned to the confirmation field rather than the original field.",
     "files": ["password-match-refiner.ts"],
     "registryDependencies": ["types"]
+  },
+  {
+    "name": "create-strong-password-refiner",
+    "description": "Validates a configurable password-strength policy (length, character classes, whitespace, repeating characters) and reports the first rule that fails.",
+    "files": ["create-strong-password-refiner.ts"],
+    "registryDependencies": ["types"]
   }
 ]
