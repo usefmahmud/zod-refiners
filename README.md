@@ -38,6 +38,7 @@ npx zod-refiners add password-match-refiner
 - [Configuration](#configuration)
 - [Available refiners](#available-refiners)
   - [`password-match-refiner`](#password-match-refiner)
+  - [`create-strong-password-refiner`](#create-strong-password-refiner)
   - [`types`](#types)
 - [The `RefineTuple` contract](#the-refinetuple-contract)
 - [How it works](#how-it-works)
@@ -407,6 +408,83 @@ const settingsSchema = z
 | Values differ | Issue at `path: ["confirmPassword"]` with your message |
 | Works with | `string`, `number`, or any `===`-comparable values |
 
+### `create-strong-password-refiner`
+
+Validates a configurable password-strength policy and reports the
+**first** rule that fails — "too short" instead of one generic
+"password is invalid" message. Every rule's wording is overridable
+through `options.messages`.
+
+```bash
+npx zod-refiners add create-strong-password-refiner
+```
+
+Installs:
+
+- `create-strong-password-refiner.ts` — the factory
+- `types.ts` — the shared `RefineTuple` type (dependency)
+
+**Signature**
+
+```ts
+function createStrongPasswordRefiner<T extends Record<string, unknown>>(
+  field: keyof T & string,
+  options?: StrongPasswordOptions,
+): RefineTuple<T>;
+```
+
+**Options** (defaults shown)
+
+```ts
+{
+  minLength: 8,
+  maxLength: 128,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireDigit: true,
+  requireSpecialChar: true,
+  specialChars: "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?",
+  forbidWhitespace: true,
+  forbidRepeatingChars: false,
+  messages: {}, // per-rule overrides: tooShort, tooLong, missingUppercase,
+                // missingLowercase, missingDigit, missingSpecialChar,
+                // containsWhitespace, repeatingChars, invalidType,
+                // generic (fallback before any rule has failed)
+}
+```
+
+**Usage**
+
+```ts
+import { z } from "zod";
+import { createStrongPasswordRefiner } from "@/lib/refiners/create-strong-password-refiner";
+
+type SignupForm = { password: string };
+
+const signupSchema = z
+  .object({ password: z.string() })
+  .refine(
+    ...createStrongPasswordRefiner<SignupForm>("password", {
+      minLength: 10,
+      messages: { tooShort: "Use at least 10 characters" },
+    }),
+  );
+```
+
+**Behavior**
+
+| Case | Result |
+|---|---|
+| All rules pass | Parses successfully |
+| A rule fails | Issue at `path: ["password"]` with the first failing rule's message |
+| Non-string value | Issue at `path: ["password"]` with the `invalidType` message |
+| `minLength > maxLength` | Throws at construction time (config error) |
+
+The tuple's second element is a plain `{ message, path }` object, as
+`RefineTuple` requires. The predicate writes the first failing rule's
+message into it before returning `false`, and Zod reads it back when
+building the issue.
+
 ### `types`
 
 Not installed by name — it follows automatically whenever a refiner needs
@@ -426,15 +504,16 @@ is exactly what Zod's `.refine()` accepts when you spread it:
 
 ```ts
 type RefineTuple<T> = [
-  (data: T) => boolean,       // 1. predicate over the whole parsed object
-  { message: string; path: string[] }, // 2. where the error goes, and what it says
+  (data: T) => boolean, // 1. predicate over the whole parsed object
+  // 2. where the error goes, and what it says
+  { message: string; path: string[] },
 ];
 ```
 
 | Element | Role |
 |---|---|
 | `[0]` | Receives the **entire** object, not one field. Return `true` when the data is valid. |
-| `[1].message` | The error message shown to the user. |
+| `[1].message` | The error message shown to the user, displayed when the predicate fails. |
 | `[1].path` | The field path the error is attached to. Zod renders it under that key, which is what makes precise, per-field errors possible. |
 
 Because the tuple is designed for the spread operator, a refiner call
@@ -581,7 +660,8 @@ zod-refiners/
 ├── registry/
 │   ├── index.json             # the manifest: names, files, dependencies
 │   ├── types.ts               # RefineTuple contract
-│   └── password-match-refiner.ts
+│   ├── password-match-refiner.ts
+│   └── create-strong-password-refiner.ts
 ├── src/
 │   ├── cli.ts                 # commander commands: init / list / add
 │   ├── config.ts              # read & write zod-refiners.json
