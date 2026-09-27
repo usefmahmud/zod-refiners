@@ -38,6 +38,7 @@ export default defineConfig({
         { text: "password-match", link: "/refiners/password-match" },
         { text: "strong-password", link: "/refiners/strong-password" },
         { text: "date-range", link: "/refiners/date-range" },
+        { text: "allowed-domains", link: "/refiners/allowed-domains" },
         { text: "types & RefineTuple", link: "/refiners/types" },
       ],
     },

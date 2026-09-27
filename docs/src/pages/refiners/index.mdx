@@ -9,6 +9,7 @@ dependency; you copy their source into your project.
 | [`password-match`](/refiners/password-match)   | Two fields hold the same value        | The confirmation field                  |
 | [`strong-password`](/refiners/strong-password) | Configurable password-strength policy | The password field                      |
 | [`date-range`](/refiners/date-range)           | End date comes after start date       | The configured field (`end` by default) |
+| [`allowed-domains`](/refiners/allowed-domains) | Email, URL, or hostname is allowlisted | The refined field                       |
 | [`types`](/refiners/types)                     | Shared `RefineTuple` contract         | — installed automatically               |
 
 Install any of them with:
@@ -17,6 +18,7 @@ Install any of them with:
 npx zod-refiners add password-match-refiner
 npx zod-refiners add strong-password-refiner
 npx zod-refiners add date-range-refiner
+npx zod-refiners add allowed-domains-refiner
 ```
 
 :::tip

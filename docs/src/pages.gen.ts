@@ -10,6 +10,7 @@ type Page =
   | { path: '/faq'; render: 'static' }
   | { path: '/getting-started'; render: 'static' }
   | { path: '/'; render: 'static' }
+  | { path: '/refiners/allowed-domains'; render: 'static' }
   | { path: '/refiners/date-range'; render: 'static' }
   | { path: '/refiners'; render: 'static' }
   | { path: '/refiners/password-match'; render: 'static' }

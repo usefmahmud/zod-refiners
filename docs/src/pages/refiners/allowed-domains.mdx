@@ -1,0 +1,99 @@
+# allowed-domains-refiner
+
+```bash
+npx zod-refiners add allowed-domains-refiner
+```
+
+Validates that a field's email, URL, or hostname belongs to an allowed
+set of domains. Built for restricting signups and invites to your own
+domain(s), allowlisting webhook/callback URLs (SSRF defense), and
+pinning asset URLs to trusted hosts — the error always lands **on the
+field you refined**.
+
+## Installs
+
+- `allowed-domains-refiner.ts` — the factory
+- `types.ts` — the shared `RefineTuple` type (dependency)
+
+## Signature
+
+```ts
+function createAllowedDomainsRefiner<T extends Record<string, unknown>>(
+  field: keyof T & string,
+  options: AllowedDomainsOptions,
+  message?: string, // default: "This domain isn't allowed"
+): RefineTuple<T>;
+```
+
+## Options
+
+```ts
+{
+  domains: string[],      // required — the allowlist, at least one entry
+  source: "email",        // "email" | "url" | "hostname" — where the
+                          // domain is extracted from
+  caseSensitive: false,   // false = compare domains case-insensitively
+  allowSubdomains: false, // false = exact match only;
+                          // true = "mail.company.com" matches "company.com"
+}
+```
+
+**Sources** — how the domain is read from the field's value:
+
+| `source`  | Value it expects              | Domain taken from                        |
+| --------- | ----------------------------- | ---------------------------------------- |
+| `"email"` (default) | `dev@company.com`   | Everything after the last `@`            |
+| `"url"`   | `https://api.company.com/hook` | The `URL` hostname (port is ignored)     |
+| `"hostname"` | `mail.company.com`        | The whole value                          |
+
+## Usage
+
+```ts
+import { z } from "zod";
+import { createAllowedDomainsRefiner } from "@/lib/refiners/allowed-domains-refiner";
+
+type InviteForm = { workEmail: string };
+
+const inviteSchema = z
+  .object({ workEmail: z.string().email() })
+  .refine(
+    ...createAllowedDomainsRefiner<InviteForm>(
+      "workEmail",
+      { domains: ["company.com", "company.io"] },
+      "Use your company email",
+    ),
+  );
+```
+
+A webhook URL allowlist, permitting subdomains:
+
+```ts
+const webhookSchema = z.object({ webhookUrl: z.string().url() }).refine(
+  ...createAllowedDomainsRefiner<WebhookForm>(
+    "webhookUrl",
+    {
+      domains: ["trusted-partner.com"],
+      source: "url",
+      allowSubdomains: true,
+    },
+    "Webhook host isn't trusted",
+  ),
+);
+```
+
+## Behavior
+
+| Case                                                           | Result                                                        |
+| -------------------------------------------------------------- | ------------------------------------------------------------- |
+| Domain on the allowlist                                        | Parses successfully                                           |
+| Domain not on the allowlist                                    | Issue at `path: ["workEmail"]` with your message              |
+| Subdomain, `allowSubdomains: false` (default)                  | Rejected (`mail.company.com` ≠ `company.com`)                 |
+| Subdomain, `allowSubdomains: true`                             | Accepted (exact matches keep working too)                     |
+| Lookalike domain (`notcompany.com`, `company.com.evil.com`)    | Rejected — the match is on a real domain boundary             |
+| Wrong type, empty value, no `@`, or unparseable URL            | Rejected with your message                                    |
+| `domains: []`                                                  | Throws at construction time (config error)                    |
+
+Comparison is case-insensitive by default (`Dev@Company.COM` matches
+`company.com`); set `caseSensitive: true` when the allowlist itself is
+case-sensitive. With `allowSubdomains: true`, matching still ends at a
+domain boundary, so `company.com.evil.com` never passes.
