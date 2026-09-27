@@ -39,6 +39,7 @@ npx zod-refiners add password-match-refiner
 - [Available refiners](#available-refiners)
   - [`password-match-refiner`](#password-match-refiner)
   - [`create-strong-password-refiner`](#create-strong-password-refiner)
+  - [`date-range-refiner`](#date-range-refiner)
   - [`types`](#types)
 - [The `RefineTuple` contract](#the-refinetuple-contract)
 - [How it works](#how-it-works)
@@ -484,6 +485,90 @@ The tuple's second element is a plain `{ message, path }` object, as
 `RefineTuple` requires. The predicate writes the first failing rule's
 message into it before returning `false`, and Zod reads it back when
 building the issue.
+
+### `date-range-refiner`
+
+Validates that an end date comes after a start date. Built for booking,
+scheduling, and filter forms — and it puts the error **on the field you
+configured** for ordering problems (the end date by default), while
+missing or invalid values are always reported on the field that's
+actually wrong.
+
+```bash
+npx zod-refiners add date-range-refiner
+```
+
+Installs:
+
+- `date-range-refiner.ts` — the factory
+- `types.ts` — the shared `RefineTuple` type (dependency)
+
+**Signature**
+
+```ts
+function createDateRangeRefiner<T extends Record<string, unknown>>(
+  startField: keyof T & string,
+  endField: keyof T & string,
+  options?: DateRangeOptions,
+): RefineTuple<T>;
+```
+
+**Options** (defaults shown)
+
+```ts
+{
+  allowEqual: false,   // false = end must be strictly after start;
+                       // true = a same-day/same-instant range is valid
+  granularity: "date", // "date" = compare local calendar days (times ignored);
+                       // "datetime" = compare exact timestamps
+  errorField: "end",   // "start" | "end" — where ordering errors land
+  messages: {},        // per-rule overrides: datesRequired,
+                       // invalidDate, endNotAfterStart
+}
+```
+
+**Usage**
+
+```ts
+import { z } from "zod";
+import { createDateRangeRefiner } from "@/lib/refiners/date-range-refiner";
+
+type BookingForm = {
+  startDate: Date;
+  endDate: Date;
+};
+
+const bookingSchema = z
+  .object({ startDate: z.date(), endDate: z.date() })
+  .refine(
+    ...createDateRangeRefiner<BookingForm>("startDate", "endDate", {
+      allowEqual: true,
+      granularity: "datetime",
+      messages: { endNotAfterStart: "Pick an end time after the start" },
+    }),
+  );
+```
+
+**Behavior**
+
+| Case | Result |
+|---|---|
+| End after start | Parses successfully |
+| End before start | Issue at `path: ["endDate"]` (or `errorField`) with the ordering message |
+| Same day, `granularity: "date"` | Passes only when `allowEqual: true` |
+| Same timestamp, `granularity: "datetime"` | Passes only when `allowEqual: true` |
+| Start or end missing (`null`/`undefined`) | Issue at `path` of the missing field with the `datesRequired` message |
+| Value that isn't a usable `Date` (wrong type or `Invalid Date`) | Issue at `path` of the offending field with the `invalidDate` message |
+| `startField === endField` | Throws at construction time (config error) |
+
+With the default `"date"` granularity the comparison uses local calendar
+days, so `2026-01-01T18:00 → 2026-01-02T09:00` is a valid range even
+though it's less than 24 hours. Switch to `"datetime"` when the times of
+day matter.
+
+The default `endNotAfterStart` message adapts to `allowEqual`:
+"End date must be after start date" when it's `false`, "End date must be
+on or after start date" when it's `true`.
 
 ### `types`
 
