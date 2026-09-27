@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo/logo.svg" width="128" alt="zod-refiners logo" />
+
 # zod-refiners
 
 **Isolated, composable Zod refiner functions — copied into your project, owned by you.**
@@ -14,7 +16,6 @@ A shadcn-style `add` workflow for cross-field validation.
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/usefmahmud/zod-refiners)
 
 ```
-npm install -D zod-refiners
 npx zod-refiners init
 npx zod-refiners add password-match-refiner
 ```

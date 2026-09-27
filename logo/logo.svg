@@ -1,0 +1,17 @@
+<svg width="192" height="223" viewBox="0 0 192 223" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M96 111.156V1.1555L191 56.1555L96 111.156Z" fill="#64748B"/>
+<path d="M96 111.156L191 56.1555V166.156L96 111.156Z" fill="#0D9488"/>
+<path d="M96 111.156L191 166.156L96 221.156V111.156Z" fill="#06B6D4"/>
+<path d="M96 111.156V221.156L1 166.156L96 111.156Z" fill="#14B8A6"/>
+<path d="M96 111.156L1 166.156V56.1555L96 111.156Z" fill="#475569"/>
+<path d="M96 111.156L1 56.1555L96 1.1555V111.156Z" fill="#64748B"/>
+<path d="M96 1.1555L191 56.1555V166.156L96 221.156L1 166.156V56.1555L96 1.1555Z" stroke="white" stroke-opacity="0.28" stroke-width="2"/>
+<path d="M96 111.156V1.1555" stroke="white" stroke-opacity="0.22"/>
+<path d="M96 111.156L191 56.1555" stroke="white" stroke-opacity="0.22"/>
+<path d="M96 111.156L191 166.156" stroke="white" stroke-opacity="0.22"/>
+<path d="M96 111.156V221.156" stroke="white" stroke-opacity="0.22"/>
+<path d="M96 111.156L1 166.156" stroke="white" stroke-opacity="0.22"/>
+<path d="M96 111.156L1 56.1555" stroke="white" stroke-opacity="0.22"/>
+<path d="M96 141.156C112.569 141.156 126 127.724 126 111.156C126 94.587 112.569 81.1555 96 81.1555C79.4315 81.1555 66 94.587 66 111.156C66 127.724 79.4315 141.156 96 141.156Z" fill="white"/>
+<path d="M82 112.156L92 122.156L112 98.1555" stroke="#0D9488" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
