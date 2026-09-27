@@ -22,5 +22,11 @@
     "description": "Validates that an end date comes after a start date, with configurable equality, date-vs-datetime granularity, and error placement.",
     "files": ["date-range-refiner.ts"],
     "registryDependencies": ["types"]
+  },
+  {
+    "name": "allowed-domains-refiner",
+    "description": "Validates that a string is a URL or email address with a domain that is in an allowed list, with optional subdomain support.",
+    "files": ["allowed-domains-refiner.ts"],
+    "registryDependencies": ["types"]
   }
 ]
