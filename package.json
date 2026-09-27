@@ -5,6 +5,10 @@
   "bin": {
     "zod-refiners": "bin/zod-refiners.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usefmahmud/zod-refiners.git"
+  },
   "files": [
     "bin",
     "dist",
