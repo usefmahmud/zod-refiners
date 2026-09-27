@@ -1,0 +1,62 @@
+![zod-refiners logo](/logo.svg)
+
+# zod-refiners
+
+**Isolated, composable Zod refiner functions — copied into your project, owned by you.**
+
+A shadcn-style `add` workflow for cross-field validation.
+
+```bash
+npx zod-refiners init
+npx zod-refiners add password-match-refiner
+```
+
+[Get started](/getting-started) · [npm](https://www.npmjs.com/package/zod-refiners) · [GitHub](https://github.com/usefmahmud/zod-refiners)
+
+## The idea
+
+Zod's `.refine()` is where you express the rules no single field can express alone:
+
+- do these two password fields match?
+- if `type` is `"invoice"`, is `vatNumber` present?
+- does `endDate` come after `startDate`?
+
+In practice, writing those rules is the least pleasant part of using Zod —
+hand-written predicates, `{ message, path }` objects assembled by hand, the
+same tuple pasted into every form.
+
+`zod-refiners` is built on one belief: **cross-field validation rules are reusable code, and reusable code should be copyable, not imported.**
+
+There is a registry of small, isolated refiner functions. You pick the ones
+you need, and the CLI **copies the source files straight into your project**.
+From that moment they are yours: readable, editable, debuggable, free of any
+dependency on this package.
+
+```ts
+.refine(
+  ...createPasswordMatchRefiner<SignupForm>("password", "confirmPassword"),
+)
+```
+
+That one spread is the whole product. Everything else — the CLI, the
+manifest, the dependency resolution — exists to get that function onto your
+disk, with its types, in the right folder, in the right order.
+
+## Highlights
+
+- **shadcn-style workflow** — `init`, `list`, `add`. Source files land in your project; the package never runs in production.
+- **You own the code** — the output of `add` is a plain `.ts` file in your repo. No runtime dependency is added, and no package version can break you.
+- **Automatic dependency closure** — add a refiner and its shared types come with it, topologically ordered, exactly once.
+- **Safe by default** — existing files are never overwritten silently; every collision asks first and defaults to *No*.
+- **Zero config to start** — `init` is optional; `add` writes the config for you on first run.
+- **TypeScript-first** — the refiner contract is a type (`RefineTuple<T>`), and errors carry `path` arrays Zod understands.
+
+## Where next
+
+| | |
+|---|---|
+| [Getting Started](/getting-started) | Install requirements, quick start, first working schema |
+| [CLI Reference](/cli) | `init`, `list`, `add` — behavior and exit codes |
+| [Refiners](/refiners) | The available registry, one page per refiner |
+| [Configuration](/configuration) | `zod-refiners.json` and nothing else |
+| [FAQ](/faq) | Short answers to the common questions |

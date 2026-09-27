@@ -1,0 +1,123 @@
+# Getting Started
+
+## Requirements
+
+| | |
+|---|---|
+| Node.js | `>= 18` |
+| Zod | `>= 3.22.0` (your project's peer dependency) |
+| Package manager | any — the CLI does not care |
+
+## Installation
+
+:::code-group
+
+```bash [npm]
+npm install --save-dev zod-refiners
+```
+
+```bash [pnpm]
+pnpm add -D zod-refiners
+```
+
+:::
+
+The CLI is a development-time tool — like a formatter or a generator,
+nothing about it ships to production. Installing it as a dev dependency
+keeps it out of your production install; running it via `npx` with no
+install at all also works.
+
+Verify it:
+
+```bash
+npx zod-refiners list
+```
+
+## Quick start
+
+::::steps
+
+### Initialize (optional)
+
+`add` will do this for you if you skip it:
+
+```bash
+npx zod-refiners init
+```
+
+```
+? Where should refiners be installed? › src/lib/refiners
+Created zod-refiners.json (refinersDir = "src/lib/refiners")
+```
+
+### Add a refiner
+
+```bash
+npx zod-refiners add password-match-refiner
+```
+
+```
+Added src/lib/refiners/types.ts
+Added src/lib/refiners/password-match-refiner.ts
+
+Done.
+```
+
+:::tip
+`types.ts` was installed without being asked for — it is a
+`registryDependency` of the password refiner, so the closure pulled it in.
+:::
+
+### Use it
+
+```ts
+// src/lib/refiners/password-match-refiner.ts was copied into your project
+import { z } from "zod";
+import { createPasswordMatchRefiner } from "@/lib/refiners/password-match-refiner";
+
+type SignupForm = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+const signupSchema = z
+  .object({
+    email: z.string().email(),
+    password: z.string().min(8),
+    confirmPassword: z.string(),
+  })
+  .refine(
+    ...createPasswordMatchRefiner<SignupForm>(
+      "password",
+      "confirmPassword",
+      "Passwords don't match",
+    ),
+  );
+
+const result = signupSchema.safeParse({
+  email: "ada@example.com",
+  password: "hunter22222",
+  confirmPassword: "hunter2222",
+});
+
+// result.success === false
+// result.error.issues[0].path === ["confirmPassword"]  ← error on the confirm field
+```
+
+::::
+
+That is the entire integration. No provider, no plugin registration, no
+import from `zod-refiners` anywhere in your application code.
+
+## Highlights
+
+- **shadcn-style workflow** — `init`, `list`, `add`. Source files land in your project; the package never runs in production.
+- **Automatic dependency closure** — add a refiner and its shared types come with it, topologically ordered, exactly once.
+- **Safe by default** — existing files are never overwritten silently; every collision asks first and defaults to *No*.
+- **Honest errors** — unknown refiners and circular registry dependencies are detected and reported by name, with a non-zero exit code.
+- **Tiny surface** — three commands, one config file, one JSON manifest.
+- **TypeScript-first** — strict-mode compiled, the refiner contract is a type (`RefineTuple<T>`).
+
+Next: the [CLI Reference](/cli) in full, or browse the
+[available refiners](/refiners).

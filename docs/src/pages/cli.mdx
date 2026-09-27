@@ -1,0 +1,108 @@
+# CLI Reference
+
+## init
+
+Creates `zod-refiners.json` in the current working directory by asking
+where refiner files should live.
+
+| Behavior | Detail |
+|---|---|
+| Already configured | Prints `Already configured. refinersDir = "..."` and exits `0` without prompting |
+| Prompt default | `src/lib/refiners` (press Enter to accept) |
+| Empty input | Falls back to the default directory |
+| Output | Writes `zod-refiners.json` with 2-space indentation |
+
+## list
+
+Loads `registry/index.json` and prints every installable refiner with its
+description.
+
+- The internal `types` entry is intentionally hidden — it is installed
+  automatically as a dependency and is not something you ask for by name.
+- Exits non-zero if the manifest cannot be read or parsed.
+
+## add
+
+Installs one or more refiners — plus their transitive dependencies.
+
+```bash
+npx zod-refiners add password-match-refiner
+npx zod-refiners add password-match-refiner another-refiner
+```
+
+**Flow:**
+
+1. **Config** — reads `zod-refiners.json`; if missing, prompts for
+   `refinersDir` and writes it (same as `init`).
+2. **Manifest** — loads the registry index.
+3. **Closure** — resolves the requested names into a topologically
+   ordered install list. Direct dependencies are installed before the
+   refiners that need them.
+4. **Copy** — for each entry, ensures the target directory exists and
+   copies every file listed in the entry.
+
+**Collision handling** — if a destination file already exists:
+
+```
+? src/lib/refiners/types.ts already exists. Overwrite? › (y/N)
+```
+
+The prompt defaults to **No**. Declining prints `Skipped <file>` and
+moves on; accepting copies the new version over the old one. Declining
+everything is a safe way to inspect what an update would change.
+
+**Exit codes**
+
+| Code | Meaning |
+|---|---|
+| `0` | Success (including "nothing to do") |
+| `1` | Unknown refiner name, or a circular dependency in the registry |
+
+```
+Unknown refiner "nope". Run "zod-refiners list" to see options.
+Circular refiner dependency: a -> b -> a
+```
+
+## How it works
+
+```
+$ npx zod-refiners add password-match-refiner
+
+ ┌──────────────┐    no config     ┌───────────────────────────┐
+ │ ensureConfig │ ───────────────► │ prompt for refinersDir    │
+ │              │                  │ write zod-refiners.json   │
+ └──────┬───────┘                  └───────────────────────────┘
+        │
+        ▼
+ ┌──────────────┐
+ │ loadManifest │  registry/index.json ──► [{name, description,
+ └──────┬───────┘                          files, registryDependencies}]
+        ▼
+ ┌────────────────┐   "password-match-refiner" needs "types"
+ │ resolveClosure │ ─────────────────────────────────────────┐
+ └──────┬─────────┘                                          │
+        │  unknown name ──► error, exit 1                    │
+        │  cycle        ──► error, exit 1                    │
+        ▼                                                    ▼
+   ordered: [types, password-match-refiner]   (topological, deduped)
+        ▼
+ ┌───────────┐   dest exists?  ──►  prompt (default: No) ──►  skip / overwrite
+ │ copyEntry │
+ └───────────┘   mkdir recursive + copyFile ──► "Added src/lib/refiners/..."
+```
+
+**Dependency resolution** is a depth-first walk over the manifest:
+
+- each entry's `registryDependencies` are visited before the entry
+  itself, so files land in a usable order;
+- a `Set` guarantees each file is copied once no matter how many refiners
+  request it;
+- revisiting an in-progress node means the registry has a cycle, and the
+  error names the full path (`a -> b -> a`);
+- a missing node means you typed a name that does not exist, and the
+  error tells you to run `list`.
+
+**Reading and writing** uses Node's standard `fs/promises` — no
+`fs-extra`, no runtime schema for the config file: `init` and `add`
+serialize `zod-refiners.json` with two-space indentation and a trailing
+newline.

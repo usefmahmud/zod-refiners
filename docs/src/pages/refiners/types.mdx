@@ -1,0 +1,54 @@
+# types & RefineTuple
+
+Not installed by name — `types.ts` follows automatically whenever a refiner
+needs it. It exists so every refiner can share one contract:
+
+```ts
+export type RefineTuple<T> = [
+  (data: T) => boolean,
+  { message: string; path: string[] },
+];
+```
+
+## The contract
+
+Everything in this project is an instance of one type. A `RefineTuple` is
+exactly what Zod's `.refine()` accepts when you spread it:
+
+```ts
+type RefineTuple<T> = [
+  (data: T) => boolean, // 1. predicate over the whole parsed object
+  // 2. where the error goes, and what it says
+  { message: string; path: string[] },
+];
+```
+
+| Element | Role |
+|---|---|
+| `[0]` | Receives the **entire** object, not one field. Return `true` when the data is valid. |
+| `[1].message` | The error message shown to the user, displayed when the predicate fails. |
+| `[1].path` | The field path the error is attached to. Zod renders it under that key, which is what makes precise, per-field errors possible. |
+
+## Hand-written vs. refiner
+
+Because the tuple is designed for the spread operator, a refiner call reads
+the same as a hand-written refinement — just with the implementation moved
+somewhere it can be reused:
+
+```ts
+// hand-written
+.refine((d) => d.password === d.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+})
+
+// with a refiner — same semantics, one line, reusable
+.refine(
+  ...createPasswordMatchRefiner<Form>("password", "confirmPassword"),
+)
+```
+
+Two rules make this composable:
+
+1. **The predicate only ever reads the data it is given.** No captured state, no I/O, no throwing.
+2. **The `path` always points at the field responsible for the failure.** For a two-field rule, that is a judgement call — `password-match-refiner` deliberately blames the confirmation field.

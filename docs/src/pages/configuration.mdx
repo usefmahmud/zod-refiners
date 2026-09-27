@@ -1,0 +1,41 @@
+# Configuration
+
+`zod-refiners.json`, at the root of your project:
+
+```json
+{
+  "refinersDir": "src/lib/refiners"
+}
+```
+
+| Field | Type | Meaning |
+|---|---|---|
+| `refinersDir` | `string` | Directory that receives copied refiner files, resolved relative to the working directory you run the CLI from |
+
+There are no other settings, by design. If you want a refiner somewhere
+else, change this string. If you want it under a different name, rename the
+file after it is copied — the tool never looks at your project's imports.
+
+## Path alias
+
+A common setup is to alias the folder so the copies are pleasant to import:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+```ts
+import { createPasswordMatchRefiner } from "@/lib/refiners/password-match-refiner";
+```
+
+:::tip
+`zod-refiners init` creates this file for you, and `add` writes it on first
+run if it is missing — running `init` first is optional.
+:::

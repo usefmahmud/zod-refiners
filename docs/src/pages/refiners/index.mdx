@@ -1,0 +1,31 @@
+# Available Refiners
+
+Each refiner is a small factory function that returns a `RefineTuple` — the
+exact shape you spread into Zod's `.refine()`. You never install them as a
+dependency; you copy their source into your project.
+
+| Refiner | Rule it enforces | Error lands on |
+|---|---|---|
+| [`password-match`](/refiners/password-match) | Two fields hold the same value | The confirmation field |
+| [`strong-password`](/refiners/strong-password) | Configurable password-strength policy | The password field |
+| [`date-range`](/refiners/date-range) | End date comes after start date | The configured field (`end` by default) |
+| [`types`](/refiners/types) | Shared `RefineTuple` contract | — installed automatically |
+
+Install any of them with:
+
+```bash
+npx zod-refiners add password-match-refiner
+npx zod-refiners add create-strong-password-refiner
+npx zod-refiners add date-range-refiner
+```
+
+:::tip
+`types.ts` is never installed by name — it follows automatically whenever a
+refiner needs it (see [`registryDependencies`](/cli)).
+:::
+
+## Design rules
+
+1. **Pure predicates** — a refiner only reads the `data` it is given; no captured state, no I/O, no throwing.
+2. **Honest paths** — `path` always points at the field responsible for the failure.
+3. **Composition over configuration** — every refiner handles exactly one concern; combine ten and each error still lands on its own field.

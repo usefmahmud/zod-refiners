@@ -1,0 +1,50 @@
+# FAQ
+
+**Does `add` modify my `package.json`?**
+No. It copies source files. The only thing it writes outside the refiners
+folder is `zod-refiners.json`.
+
+**Do the copied files import from `zod-refiners`?**
+Never. That is the point. The only import a copied refiner has is
+`./types`; your application imports it alongside `zod` and nothing else.
+
+**What happens when I run `add` and the file is already there?**
+You get a per-file confirmation defaulting to *No*. Nothing is ever
+overwritten silently, which makes re-running `add` a safe way to see what
+changed upstream.
+
+**How do I get updates to a refiner I already installed?**
+Run `add` again and accept the overwrite. You will lose local edits to
+that file — read the new copy first if you have customized it.
+
+**Can I edit the copied files?**
+Yes, they are yours now. The only consequence is that upstream updates
+will conflict with your edits, and the overwrite prompt is where you
+decide which version wins.
+
+**`Unknown refiner "x"` — what now?**
+The name is not in the manifest. Run `npx zod-refiners list`, and check
+for typos. Names are case-sensitive.
+
+**Does it work with Zod v4?**
+Yes. The `RefineTuple` shape — a predicate plus `{ message, path }` — is
+accepted by Zod 3 and Zod 4, and the examples were run against Zod 4.
+
+**Windows?**
+The CLI uses `node:path` throughout, so paths behave correctly on
+Windows, Linux, and macOS.
+
+**Why is there no plugin/runtime API?**
+Because a runtime API would reintroduce the dependency this project
+exists to remove. The registry is data, the CLI is a copier, and your
+code stays yours.
+
+## Writing your own refiner
+
+A refiner is a factory: it takes the configuration a call site needs and
+returns a `RefineTuple`. The full template, the `registry/index.json`
+manifest fields, and the refiner checklist live in the repository:
+[Writing your own refiner](https://github.com/usefmahmud/zod-refiners#writing-your-own-refiner).
+
+Contributions are welcome — new refiners especially. See
+[Contributing](https://github.com/usefmahmud/zod-refiners#contributing).
