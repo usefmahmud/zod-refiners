@@ -1,6 +1,6 @@
 {
   "name": "zod-refiners",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "description": "CLI that copies isolated, composable Zod refiner functions into your project (shadcn-style 'add' workflow).",
   "bin": {
     "zod-refiners": "bin/zod-refiners.js"
