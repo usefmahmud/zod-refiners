@@ -1,6 +1,7 @@
 import path from "node:path";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import prompts from "prompts";
+import { pathExists, readJson } from "./fsutil";
 
 const CONFIG_FILENAME = "zod-refiners.json";
 const DEFAULT_REFINERS_DIR = "src/lib/refiners";
@@ -18,12 +19,12 @@ export async function readConfig(
 ): Promise<ZodRefinersConfig | null> {
   const configPath = getConfigPath(cwd);
 
-  if (!(await fs.pathExists(configPath))) {
+  if (!(await pathExists(configPath))) {
     return null;
   }
 
   try {
-    return await fs.readJson(configPath);
+    return await readJson<ZodRefinersConfig>(configPath);
   } catch (error) {
     throw new Error(
       `Failed to parse config at "${configPath}": ${
@@ -40,7 +41,11 @@ export async function writeConfig(
   const configPath = getConfigPath(cwd);
 
   try {
-    await fs.writeJson(configPath, config, { spaces: 2 });
+    await fs.writeFile(
+      configPath,
+      `${JSON.stringify(config, null, 2)}\n`,
+      "utf8",
+    );
   } catch (error) {
     throw new Error(
       `Failed to write config to "${configPath}": ${

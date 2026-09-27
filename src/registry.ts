@@ -1,7 +1,8 @@
 import path from "node:path";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import prompts from "prompts";
 import pc from "picocolors";
+import { pathExists, readJson } from "./fsutil";
 
 export interface RegistryEntry {
   name: string;
@@ -14,7 +15,7 @@ export const REGISTRY_DIR = path.join(__dirname, "..", "registry");
 export const REGISTRY_MANIFEST = path.join(REGISTRY_DIR, "index.json");
 
 export async function loadManifest(): Promise<RegistryEntry[]> {
-  return fs.readJson(REGISTRY_MANIFEST);
+  return readJson<RegistryEntry[]>(REGISTRY_MANIFEST);
 }
 
 /** Thrown by `resolveClosure` when a requested or transitive dependency name isn't in the manifest. */
@@ -98,14 +99,14 @@ export async function copyEntry(
   entry: RegistryEntry,
   targetDir: string,
 ): Promise<void> {
-  await fs.ensureDir(targetDir);
+  await fs.mkdir(targetDir, { recursive: true });
 
   for (const file of entry.files) {
     const src = path.join(REGISTRY_DIR, file);
     const dest = path.join(targetDir, file);
     const relativeDest = path.relative(process.cwd(), dest);
 
-    if (await fs.pathExists(dest)) {
+    if (await pathExists(dest)) {
       const { overwrite } = await prompts({
         type: "confirm",
         name: "overwrite",
@@ -119,7 +120,8 @@ export async function copyEntry(
       }
     }
 
-    await fs.copy(src, dest);
+    await fs.mkdir(path.dirname(dest), { recursive: true });
+    await fs.copyFile(src, dest);
     console.log(pc.green(`Added ${relativeDest}`));
   }
 }
