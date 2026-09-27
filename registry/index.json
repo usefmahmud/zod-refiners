@@ -12,9 +12,9 @@
     "registryDependencies": ["types"]
   },
   {
-    "name": "create-strong-password-refiner",
+    "name": "strong-password-refiner",
     "description": "Validates a configurable password-strength policy (length, character classes, whitespace, repeating characters) and reports the first rule that fails.",
-    "files": ["create-strong-password-refiner.ts"],
+    "files": ["strong-password-refiner.ts"],
     "registryDependencies": ["types"]
   },
   {

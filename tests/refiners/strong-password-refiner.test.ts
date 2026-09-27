@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   createStrongPasswordRefiner,
   type StrongPasswordOptions,
-} from "../../registry/create-strong-password-refiner";
+} from "../../registry/strong-password-refiner";
 import { runRefine } from "../helpers/refine";
 
 type LoginForm = { password: string };

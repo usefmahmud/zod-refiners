@@ -38,7 +38,7 @@ npx zod-refiners add password-match-refiner
 - [Configuration](#configuration)
 - [Available refiners](#available-refiners)
   - [`password-match-refiner`](#password-match-refiner)
-  - [`create-strong-password-refiner`](#create-strong-password-refiner)
+  - [`strong-password-refiner`](#strong-password-refiner)
   - [`date-range-refiner`](#date-range-refiner)
   - [`types`](#types)
 - [The `RefineTuple` contract](#the-refinetuple-contract)
@@ -137,7 +137,7 @@ overwrite prompt is how you opt into upstream improvements.
 - **Automatic dependency closure** — add a refiner and its shared types
   come with it, topologically ordered, exactly once.
 - **Safe by default** — existing files are never overwritten silently;
-  every collision asks first and defaults to *No*.
+  every collision asks first and defaults to _No_.
 - **Honest errors** — unknown refiners and circular registry dependencies
   are detected and reported by name, with a non-zero exit code.
 - **Tiny surface** — three commands, one config file, one JSON manifest.
@@ -165,11 +165,11 @@ install at all also works.
 
 **Requirements**
 
-| | |
-|---|---|
-| Node.js | `>= 18` |
-| Zod | `>= 3.22.0` (your project's peer dependency) |
-| Package manager | any — the CLI does not care |
+|                 |                                              |
+| --------------- | -------------------------------------------- |
+| Node.js         | `>= 18`                                      |
+| Zod             | `>= 3.22.0` (your project's peer dependency) |
+| Package manager | any — the CLI does not care                  |
 
 Verify it:
 
@@ -253,12 +253,12 @@ import from `zod-refiners` anywhere in your application code.
 Creates `zod-refiners.json` in the current working directory by asking
 where refiner files should live.
 
-| Behavior | Detail |
-|---|---|
+| Behavior           | Detail                                                                           |
+| ------------------ | -------------------------------------------------------------------------------- |
 | Already configured | Prints `Already configured. refinersDir = "..."` and exits `0` without prompting |
-| Prompt default | `src/lib/refiners` (press Enter to accept) |
-| Empty input | Falls back to the default directory |
-| Output | Writes `zod-refiners.json` with 2-space indentation |
+| Prompt default     | `src/lib/refiners` (press Enter to accept)                                       |
+| Empty input        | Falls back to the default directory                                              |
+| Output             | Writes `zod-refiners.json` with 2-space indentation                              |
 
 ### `zod-refiners list`
 
@@ -301,10 +301,10 @@ everything is a safe way to inspect what an update would change.
 
 **Exit codes**
 
-| Code | Meaning |
-|---|---|
-| `0` | Success (including "nothing to do") |
-| `1` | Unknown refiner name, or a circular dependency in the registry |
+| Code | Meaning                                                        |
+| ---- | -------------------------------------------------------------- |
+| `0`  | Success (including "nothing to do")                            |
+| `1`  | Unknown refiner name, or a circular dependency in the registry |
 
 ```
 Unknown refiner "nope". Run "zod-refiners list" to see options.
@@ -321,8 +321,8 @@ Circular refiner dependency: a -> b -> a
 }
 ```
 
-| Field | Type | Meaning |
-|---|---|---|
+| Field         | Type     | Meaning                                                                                                       |
+| ------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
 | `refinersDir` | `string` | Directory that receives copied refiner files, resolved relative to the working directory you run the CLI from |
 
 There are no other settings, by design. If you want a refiner somewhere
@@ -338,9 +338,9 @@ import:
 {
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+      "@/*": ["./src/*"],
+    },
+  },
 }
 ```
 
@@ -403,13 +403,13 @@ const settingsSchema = z
 
 **Behavior**
 
-| Case | Result |
-|---|---|
-| Values equal | Parses successfully |
+| Case          | Result                                                 |
+| ------------- | ------------------------------------------------------ |
+| Values equal  | Parses successfully                                    |
 | Values differ | Issue at `path: ["confirmPassword"]` with your message |
-| Works with | `string`, `number`, or any `===`-comparable values |
+| Works with    | `string`, `number`, or any `===`-comparable values     |
 
-### `create-strong-password-refiner`
+### `strong-password-refiner`
 
 Validates a configurable password-strength policy and reports the
 **first** rule that fails — "too short" instead of one generic
@@ -417,12 +417,12 @@ Validates a configurable password-strength policy and reports the
 through `options.messages`.
 
 ```bash
-npx zod-refiners add create-strong-password-refiner
+npx zod-refiners add strong-password-refiner
 ```
 
 Installs:
 
-- `create-strong-password-refiner.ts` — the factory
+- `strong-password-refiner.ts` — the factory
 - `types.ts` — the shared `RefineTuple` type (dependency)
 
 **Signature**
@@ -458,28 +458,26 @@ function createStrongPasswordRefiner<T extends Record<string, unknown>>(
 
 ```ts
 import { z } from "zod";
-import { createStrongPasswordRefiner } from "@/lib/refiners/create-strong-password-refiner";
+import { createStrongPasswordRefiner } from "@/lib/refiners/strong-password-refiner";
 
 type SignupForm = { password: string };
 
-const signupSchema = z
-  .object({ password: z.string() })
-  .refine(
-    ...createStrongPasswordRefiner<SignupForm>("password", {
-      minLength: 10,
-      messages: { tooShort: "Use at least 10 characters" },
-    }),
-  );
+const signupSchema = z.object({ password: z.string() }).refine(
+  ...createStrongPasswordRefiner<SignupForm>("password", {
+    minLength: 10,
+    messages: { tooShort: "Use at least 10 characters" },
+  }),
+);
 ```
 
 **Behavior**
 
-| Case | Result |
-|---|---|
-| All rules pass | Parses successfully |
-| A rule fails | Issue at `path: ["password"]` with the first failing rule's message |
-| Non-string value | Issue at `path: ["password"]` with the `invalidType` message |
-| `minLength > maxLength` | Throws at construction time (config error) |
+| Case                    | Result                                                              |
+| ----------------------- | ------------------------------------------------------------------- |
+| All rules pass          | Parses successfully                                                 |
+| A rule fails            | Issue at `path: ["password"]` with the first failing rule's message |
+| Non-string value        | Issue at `path: ["password"]` with the `invalidType` message        |
+| `minLength > maxLength` | Throws at construction time (config error)                          |
 
 The tuple's second element is a plain `{ message, path }` object, as
 `RefineTuple` requires. The predicate writes the first failing rule's
@@ -551,15 +549,15 @@ const bookingSchema = z
 
 **Behavior**
 
-| Case | Result |
-|---|---|
-| End after start | Parses successfully |
-| End before start | Issue at `path: ["endDate"]` (or `errorField`) with the ordering message |
-| Same day, `granularity: "date"` | Passes only when `allowEqual: true` |
-| Same timestamp, `granularity: "datetime"` | Passes only when `allowEqual: true` |
-| Start or end missing (`null`/`undefined`) | Issue at `path` of the missing field with the `datesRequired` message |
-| Value that isn't a usable `Date` (wrong type or `Invalid Date`) | Issue at `path` of the offending field with the `invalidDate` message |
-| `startField === endField` | Throws at construction time (config error) |
+| Case                                                            | Result                                                                   |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| End after start                                                 | Parses successfully                                                      |
+| End before start                                                | Issue at `path: ["endDate"]` (or `errorField`) with the ordering message |
+| Same day, `granularity: "date"`                                 | Passes only when `allowEqual: true`                                      |
+| Same timestamp, `granularity: "datetime"`                       | Passes only when `allowEqual: true`                                      |
+| Start or end missing (`null`/`undefined`)                       | Issue at `path` of the missing field with the `datesRequired` message    |
+| Value that isn't a usable `Date` (wrong type or `Invalid Date`) | Issue at `path` of the offending field with the `invalidDate` message    |
+| `startField === endField`                                       | Throws at construction time (config error)                               |
 
 With the default `"date"` granularity the comparison uses local calendar
 days, so `2026-01-01T18:00 → 2026-01-02T09:00` is a valid range even
@@ -595,11 +593,11 @@ type RefineTuple<T> = [
 ];
 ```
 
-| Element | Role |
-|---|---|
-| `[0]` | Receives the **entire** object, not one field. Return `true` when the data is valid. |
-| `[1].message` | The error message shown to the user, displayed when the predicate fails. |
-| `[1].path` | The field path the error is attached to. Zod renders it under that key, which is what makes precise, per-field errors possible. |
+| Element       | Role                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `[0]`         | Receives the **entire** object, not one field. Return `true` when the data is valid.                                            |
+| `[1].message` | The error message shown to the user, displayed when the predicate fails.                                                        |
+| `[1].path`    | The field path the error is attached to. Zod renders it under that key, which is what makes precise, per-field errors possible. |
 
 Because the tuple is designed for the spread operator, a refiner call
 reads the same as a hand-written refinement — just with the
@@ -708,11 +706,11 @@ Then register it in `registry/index.json`:
 }
 ```
 
-| Manifest field | Meaning |
-|---|---|
-| `name` | What users type in `add <name>` |
-| `description` | Shown by `list` — say what rule it enforces and where the error lands |
-| `files` | Files copied into `refinersDir`, relative to `registry/` |
+| Manifest field         | Meaning                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `name`                 | What users type in `add <name>`                                               |
+| `description`          | Shown by `list` — say what rule it enforces and where the error lands         |
+| `files`                | Files copied into `refinersDir`, relative to `registry/`                      |
 | `registryDependencies` | Other entry names that must be installed first (`types` in almost every case) |
 
 Check your work:
@@ -746,7 +744,7 @@ zod-refiners/
 │   ├── index.json             # the manifest: names, files, dependencies
 │   ├── types.ts               # RefineTuple contract
 │   ├── password-match-refiner.ts
-│   └── create-strong-password-refiner.ts
+│   └── strong-password-refiner.ts
 ├── src/
 │   ├── cli.ts                 # commander commands: init / list / add
 │   ├── config.ts              # read & write zod-refiners.json
@@ -795,10 +793,10 @@ node /path/to/zod-refiners/bin/zod-refiners.js add password-match-refiner
 
 Useful commands:
 
-| Command | Effect |
-|---|---|
-| `pnpm build` | Compile `src/` → `dist/` with `tsc` (this is the gate every PR must pass) |
-| `node bin/zod-refiners.js <cmd>` | Run the CLI from your working tree |
+| Command                          | Effect                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `pnpm build`                     | Compile `src/` → `dist/` with `tsc` (this is the gate every PR must pass) |
+| `node bin/zod-refiners.js <cmd>` | Run the CLI from your working tree                                        |
 
 ### Submitting a refiner
 
@@ -841,7 +839,7 @@ Never. That is the point. The only import a copied refiner has is
 `./types`; your application imports it alongside `zod` and nothing else.
 
 **What happens when I run `add` and the file is already there?**
-You get a per-file confirmation defaulting to *No*. Nothing is ever
+You get a per-file confirmation defaulting to _No_. Nothing is ever
 overwritten silently, which makes re-running `add` a safe way to see what
 changed upstream.
 
