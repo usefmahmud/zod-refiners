@@ -1,7 +1,9 @@
 import path from "node:path";
 import fs from "fs-extra";
+import prompts from "prompts";
 
 const CONFIG_FILENAME = "zod-refiners.json";
+const DEFAULT_REFINERS_DIR = "src/lib/refiners";
 
 export interface ZodRefinersConfig {
   refinersDir: string;
@@ -46,4 +48,26 @@ export async function writeConfig(
       }`,
     );
   }
+}
+
+export async function ensureConfig(cwd: string): Promise<ZodRefinersConfig> {
+  const existing = await readConfig(cwd);
+
+  if (existing) return existing;
+
+  const { refinersDir } = await prompts({
+    type: "text",
+    name: "refinersDir",
+    message: "Where should refiner files be installed?",
+    initial: DEFAULT_REFINERS_DIR,
+  });
+
+  const resolvedDir: string =
+    typeof refinersDir === "string" && refinersDir.trim().length > 0
+      ? refinersDir.trim()
+      : DEFAULT_REFINERS_DIR;
+
+  const config: ZodRefinersConfig = { refinersDir: resolvedDir };
+  await writeConfig(cwd, config);
+  return config;
 }
