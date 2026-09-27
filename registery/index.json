@@ -1,0 +1,14 @@
+[
+  {
+    "name": "types",
+    "description": "Shared RefineTuple type used by every refiner. Installed automatically as a dependency.",
+    "files": ["types.ts"],
+    "registryDependencies": []
+  },
+  {
+    "name": "password-match-refiner",
+    "description": "Intended for confirmation fields such as `confirmPassword`. When the values differ, the validation error is assigned to the confirmation field rather than the original field.",
+    "files": ["password-match-refiner.ts"],
+    "registryDependencies": ["types"]
+  }
+]

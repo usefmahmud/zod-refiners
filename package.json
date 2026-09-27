@@ -1,0 +1,44 @@
+{
+  "name": "zod-refiners",
+  "version": "0.1.0",
+  "description": "CLI that copies isolated, composable Zod refiner functions into your project (shadcn-style 'add' workflow).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.20.0",
+      "onFail": "download"
+    }
+  },
+  "type": "commonjs",
+  "peerDependencies": {
+    "zod": ">=3.22.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "zod",
+    "refiners",
+    "validation",
+    "cli",
+    "codegen"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^15.0.0",
+    "fs-extra": "^11.4.1",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^26.6.3",
+    "@types/prompts": "^2.4.9",
+    "typescript": "^7.0.2"
+  }
+}
